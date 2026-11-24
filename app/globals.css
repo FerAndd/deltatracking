@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  /* Acento de la vista de admin (la vista del cliente usará la paleta de Delta) */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe7ff;
+  --color-brand-500: #3b6ef5;
+  --color-brand-600: #2453d9;
+  --color-brand-700: #1d43b0;
+  /* Paleta de Grupo Delta (sacada del logo) */
+  --color-delta: #4f3d66;
+  --color-delta-dark: #3a2c4d;
+  --color-delta-soft: #efeaf5;
+  --color-gold: #d0aa5c;
+  --color-gold-light: #e7da8f;
+  --color-gold-soft: #faf5e6;
+}
+
+body {
+  background: #f6f7f9;
+  color: #18181b;
+}
+
+@utility field {
+  @apply w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-[15px] text-zinc-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium text-zinc-700;
+}
+@utility card {
+  @apply rounded-2xl border border-zinc-200 bg-white shadow-sm;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+}
+@utility btn-secondary {
+  @apply btn border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50;
+}
+@utility btn-danger {
+  @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50;
+}
