@@ -42,3 +42,12 @@ export const TAGS: { value: FeedbackTag; label: string }[] = [
 ];
 
 export const TAG_LABEL = Object.fromEntries(TAGS.map((t) => [t.value, t.label])) as Record<FeedbackTag, string>;
+
+/** Cómo ve el cliente cada estado (lenguaje más amable). */
+export const CLIENT_STATUS_LABEL: Record<PieceStatus, string> = {
+  por_editar: "Programada",
+  en_edicion: "En edición",
+  enviado_aprobacion: "Lista para tu revisión",
+  cambios_solicitados: "Aplicando tus cambios",
+  aprobado: "Aprobada",
+};

@@ -9,7 +9,7 @@ App para dar seguimiento a las piezas de contenido de Delta. El detalle de lo qu
 
 ## Partes
 1. ✅ Base de datos y vista de admin (Esta semana, Tablero, Piezas, Métricas, Ajustes)
-2. ⏳ Vista del cliente (link privado de solo lectura)
+2. ✅ Vista del cliente (link privado de solo lectura: avance, calendario, piezas, resúmenes)
 3. ⏳ Resúmenes de los viernes
 
 ## Variables de entorno

@@ -51,7 +51,7 @@ async function main() {
     const [p] = await db.insert(pieces).values({
       clientId: client.id, title: d.title, type: d.type, editorId: ed(d.editor), status: d.status, round: d.round ?? 0,
       dueDate: addDays(t, d.due), publishDate: d.publish === undefined ? null : addDays(t, d.publish),
-      fileLink: d.status === "enviado_aprobacion" ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : null,
+      fileLink: d.status === "enviado_aprobacion" ? "https://drive.google.com/file/d/ARCHIVO_DE_EJEMPLO/view" : null,
       delivered: d.delivered !== undefined, deliveredAt: d.delivered !== undefined ? at(addDays(t, d.delivered), "16:30") : null,
       clientNote: d.note ?? null, createdAt: at(addDays(t, d.created), "09:00"),
       brief: { guion: "Abrir con el producto en primer plano…", referencias: ["https://www.instagram.com/p/ejemplo"], copy: "", musica: "Algo energético", indicaciones: "" },

@@ -1,14 +1,34 @@
 import { SubmitButton } from "@/components/submit-button";
-import { getChecklistTemplate, listEditors } from "@/lib/queries";
-import { addEditor, renameEditor, saveChecklistTemplate, toggleEditor } from "../actions";
+import { headers } from "next/headers";
+import { CopyLink } from "@/components/copy-link";
+import { getChecklistTemplate, getMainClient, listEditors } from "@/lib/queries";
+import { addEditor, regenerateClientLink, renameEditor, saveChecklistTemplate, toggleEditor } from "../actions";
 
 export default async function SettingsPage({ searchParams }: PageProps<"/ajustes">) {
   const sp = await searchParams;
-  const [editors, template] = await Promise.all([listEditors(), getChecklistTemplate()]);
+  const [editors, template, client] = await Promise.all([listEditors(), getChecklistTemplate(), getMainClient()]);
+  const h = await headers();
+  const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-2xl font-semibold">Ajustes</h1>
       {sp.guardado && <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Cambios guardados.</p>}
+
+      <section className="card p-5">
+        <h2 className="font-semibold">Link del cliente</h2>
+        <p className="text-xs text-zinc-500">
+          Este es el link privado que le compartes a Delta. Lo abre sin cuenta y solo ve su vista (sin comentarios internos, brief, checklist, alertas, métricas ni nombres de editores).
+        </p>
+        {sp.link && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">Link nuevo creado. El anterior ya no funciona: compártele este al cliente.</p>}
+        <div className="mt-4">
+          <CopyLink url={`${origin}/c/${client.shareToken}`} path={`/c/${client.shareToken}`} />
+        </div>
+        <form action={regenerateClientLink} className="mt-3">
+          <SubmitButton className="btn text-xs text-zinc-500 hover:bg-zinc-100" pendingText="Creando…" confirmText="Se creará un link nuevo y el actual dejará de funcionar. ¿Continuar?">
+            Cambiar link (si se compartió de más)
+          </SubmitButton>
+        </form>
+      </section>
 
       <section className="card p-5">
         <h2 className="font-semibold">Editores</h2>
