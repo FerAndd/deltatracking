@@ -10,10 +10,12 @@ App para dar seguimiento a las piezas de contenido de Delta. El detalle de lo qu
 ## Partes
 1. ✅ Base de datos y vista de admin (Esta semana, Tablero, Piezas, Métricas, Ajustes)
 2. ✅ Vista del cliente (link privado de solo lectura: avance, calendario, piezas, resúmenes)
-3. ⏳ Resúmenes de los viernes
+3. ✅ Resúmenes de los viernes (borradores con Claude, viernes 5 pm Monterrey; Fer revisa y publica)
 
 ## Variables de entorno
-Ver `.env.example`: `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`.
+Ver `.env.example`: `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`, `CRON_SECRET`.
+
+Guía para publicar: [`PUBLICAR.md`](./PUBLICAR.md).
 
 ## Para desarrollar en una computadora
 ```bash
