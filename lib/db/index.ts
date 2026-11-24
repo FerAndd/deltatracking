@@ -1,18 +1,30 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-const globalForDb = globalThis as unknown as { pg?: ReturnType<typeof postgres> };
+type DB = PostgresJsDatabase<typeof schema>;
+const globalForDb = globalThis as unknown as { db?: DB };
 
-function client() {
+/**
+ * La conexión se crea la primera vez que se usa (no al compilar), así la app se puede
+ * construir aunque falte DATABASE_URL; el error aparece solo al usar la base de datos.
+ */
+function getDb(): DB {
+  if (globalForDb.db) return globalForDb.db;
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("Falta la variable DATABASE_URL");
   // prepare: false es necesario con el "Transaction pooler" de Supabase.
-  return postgres(url, { prepare: false, max: 5 });
+  const instance = drizzle(postgres(url, { prepare: false, max: 5 }), { schema });
+  globalForDb.db = instance;
+  return instance;
 }
 
-const pg = globalForDb.pg ?? client();
-if (process.env.NODE_ENV !== "production") globalForDb.pg = pg;
+export const db = new Proxy({} as DB, {
+  get(_target, prop) {
+    const real = getDb();
+    const value = Reflect.get(real, prop, real);
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+});
 
-export const db = drizzle(pg, { schema });
 export * from "./schema";
