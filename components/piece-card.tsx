@@ -11,10 +11,12 @@ export function PieceCard({
   piece,
   showStatus = true,
   statusControl = false,
+  maxRounds,
 }: {
   piece: PieceWithEditor;
   showStatus?: boolean;
   statusControl?: boolean;
+  maxRounds: number;
 }) {
   const alert = alertFor(piece);
   return (
@@ -33,7 +35,7 @@ export function PieceCard({
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <AlertBadge level={alert} />
           {showStatus && <StatusBadge status={piece.status} />}
-          <RoundBadge round={piece.round} />
+          <RoundBadge round={piece.round} max={maxRounds} />
           {piece.delivered && (
             <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">Entregado</span>
           )}

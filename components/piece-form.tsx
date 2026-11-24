@@ -1,6 +1,7 @@
 import { STATUSES, TYPES } from "@/lib/constants";
 import type { ChecklistItem, Editor, Piece } from "@/lib/db/schema";
 import { formatDateTime } from "@/lib/dates";
+import { roundState } from "./badges";
 import { ChecklistEditor } from "./checklist-editor";
 import { SubmitButton } from "./submit-button";
 
@@ -21,13 +22,18 @@ export function PieceForm({
   values,
   editors,
   submitLabel,
+  maxRounds,
 }: {
   action: (fd: FormData) => Promise<void>;
   values: Values;
   editors: Editor[];
   submitLabel: string;
+  maxRounds: number;
 }) {
   const brief = values.brief ?? {};
+  const round = values.round ?? 0;
+  const rs = roundState(round, maxRounds);
+  const left = maxRounds - round;
   return (
     <form action={action} className="space-y-5">
       <Section title="Datos de la pieza">
@@ -69,7 +75,15 @@ export function PieceForm({
           </div>
           <div>
             <span className="label">Ronda de cambios</span>
-            <p className="field bg-zinc-50 text-zinc-600">{values.round ?? 0}</p>
+            <p className={`field font-medium ${round ? rs.cls : "bg-zinc-50 text-zinc-600"}`}>
+              {round} de {maxRounds}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {left > 1 && `Quedan ${left} rondas incluidas.`}
+              {left === 1 && "Queda 1 ronda: la siguiente es la última."}
+              {left === 0 && "Esta es la última ronda incluida."}
+              {left < 0 && `Va ${-left} ronda${left < -1 ? "s" : ""} por encima del paquete.`}
+            </p>
           </div>
         </div>
         <div>

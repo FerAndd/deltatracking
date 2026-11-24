@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { alertFor } from "@/lib/alerts";
 import { STATUS_LABEL, TAG_LABEL, TAGS } from "@/lib/constants";
 import { formatDateTime } from "@/lib/dates";
-import { getFeedback, getPiece, getStatusEvents, listEditors } from "@/lib/queries";
+import { getFeedback, getMaxRounds, getPiece, getStatusEvents, listEditors } from "@/lib/queries";
 import { addFeedback, deletePiece, duplicatePiece, updatePiece } from "../../actions";
 
 export default async function PiecePage({ params, searchParams }: PageProps<"/piezas/[id]">) {
@@ -14,7 +14,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
   const sp = await searchParams;
   const piece = await getPiece(id);
   if (!piece) notFound();
-  const [editors, comments, events] = await Promise.all([listEditors(), getFeedback(id), getStatusEvents(id)]);
+  const [editors, comments, events, maxRounds] = await Promise.all([listEditors(), getFeedback(id), getStatusEvents(id), getMaxRounds()]);
   const alert = alertFor(piece);
 
   return (
@@ -26,7 +26,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
           <div className="mt-2 flex flex-wrap gap-1.5">
             <AlertBadge level={alert} />
             <StatusBadge status={piece.status} />
-            <RoundBadge round={piece.round} />
+            <RoundBadge round={piece.round} max={maxRounds} always />
           </div>
         </div>
         <div className="flex gap-2">
@@ -51,6 +51,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
         editors={editors}
         submitLabel="Guardar cambios"
         values={piece}
+        maxRounds={maxRounds}
       />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_340px]">

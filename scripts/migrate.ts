@@ -46,6 +46,8 @@ async function main() {
     })
     .onConflictDoNothing();
 
+  await db.insert(settings).values({ key: "max_rounds", value: 3 }).onConflictDoNothing();
+
   await pg.end();
   console.log("Base de datos lista.");
 }

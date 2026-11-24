@@ -3,7 +3,7 @@ import { PieceCard } from "@/components/piece-card";
 import { alertFor } from "@/lib/alerts";
 import { STATUSES, STATUS_STYLE } from "@/lib/constants";
 import { addDays, formatDate, relativeDay, todayMty, workWeek } from "@/lib/dates";
-import { getMainClient, listEditors, listPieces, type PieceWithEditor } from "@/lib/queries";
+import { getMainClient, getMaxRounds, listEditors, listPieces, type PieceWithEditor } from "@/lib/queries";
 
 function Stat({ label, value, tone = "" }: { label: string; value: number; tone?: string }) {
   return (
@@ -14,7 +14,7 @@ function Stat({ label, value, tone = "" }: { label: string; value: number; tone?
   );
 }
 
-function Group({ title, pieces, empty }: { title: string; pieces: PieceWithEditor[]; empty?: string }) {
+function Group({ title, pieces, empty, maxRounds }: { title: string; pieces: PieceWithEditor[]; empty?: string; maxRounds: number }) {
   return (
     <section>
       <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500">
@@ -26,7 +26,7 @@ function Group({ title, pieces, empty }: { title: string; pieces: PieceWithEdito
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {pieces.map((p) => <PieceCard key={p.id} piece={p} statusControl />)}
+          {pieces.map((p) => <PieceCard key={p.id} piece={p} statusControl maxRounds={maxRounds} />)}
         </div>
       )}
     </section>
@@ -37,10 +37,11 @@ export default async function ThisWeekPage() {
   const client = await getMainClient();
   const today = todayMty();
   const week = workWeek(today);
-  const [active, editors, deliveredThisWeek] = await Promise.all([
+  const [active, editors, deliveredThisWeek, maxRounds] = await Promise.all([
     listPieces({ clientId: client.id, delivered: false }),
     listEditors({ activeOnly: true }),
     listPieces({ clientId: client.id, delivered: true, dueFrom: week.start, dueTo: week.end }),
+    getMaxRounds(),
   ]);
 
   const alerts = active.filter((p) => alertFor(p));
@@ -82,15 +83,15 @@ export default async function ThisWeekPage() {
         <div className="space-y-8">
           {alerts.length > 0 && (
             <div className="rounded-2xl border border-red-200 bg-red-50/60 p-4">
-              <Group title="⚠ Atrasadas o por vencer" pieces={alerts} />
+              <Group maxRounds={maxRounds} title="⚠ Atrasadas o por vencer" pieces={alerts} />
             </div>
           )}
-          <Group title="Vence hoy" pieces={dueToday} empty="No hay entregas pendientes para hoy." />
+          <Group maxRounds={maxRounds} title="Vence hoy" pieces={dueToday} empty="No hay entregas pendientes para hoy." />
           {[...upcomingByDay.entries()].map(([day, ps]) => (
-            <Group key={day} title={relativeDay(day)} pieces={ps} />
+            <Group maxRounds={maxRounds} key={day} title={relativeDay(day)} pieces={ps} />
           ))}
           {upcomingByDay.size === 0 && (
-            <Group title="Resto de la semana" pieces={[]} empty="No hay más entregas esta semana." />
+            <Group maxRounds={maxRounds} title="Resto de la semana" pieces={[]} empty="No hay más entregas esta semana." />
           )}
         </div>
 

@@ -21,11 +21,20 @@ export function AlertBadge({ level }: { level: AlertLevel }) {
   );
 }
 
-export function RoundBadge({ round }: { round: number }) {
-  if (!round) return null;
+/** Estado de la ronda respecto al límite: normal, última ronda o fuera del paquete. */
+export function roundState(round: number, max: number) {
+  if (round > max) return { cls: "bg-red-100 text-red-800 ring-1 ring-red-200", note: "fuera del paquete" };
+  if (round === max) return { cls: "bg-amber-100 text-amber-900 ring-1 ring-amber-200", note: "última" };
+  return { cls: "bg-zinc-100 text-zinc-600", note: "" };
+}
+
+export function RoundBadge({ round, max, always = false }: { round: number; max: number; always?: boolean }) {
+  if (!round && !always) return null;
+  const s = roundState(round, max);
   return (
-    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600" title="Ronda de cambios">
-      Ronda {round}
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.cls}`} title={`Rondas de cambios usadas: ${round} de ${max} incluidas`}>
+      Ronda {round} de {max}
+      {s.note && ` · ${s.note}`}
     </span>
   );
 }

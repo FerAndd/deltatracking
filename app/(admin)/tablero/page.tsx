@@ -3,7 +3,7 @@ import { PieceCard } from "@/components/piece-card";
 import { STATUSES, STATUS_STYLE, TYPES } from "@/lib/constants";
 import { addDays, todayMty, workWeek } from "@/lib/dates";
 import type { PieceType } from "@/lib/db/schema";
-import { getMainClient, listEditors, listPieces } from "@/lib/queries";
+import { getMainClient, getMaxRounds, listEditors, listPieces } from "@/lib/queries";
 
 const WEEKS = [
   { value: "todas", label: "Todas las fechas" },
@@ -25,8 +25,9 @@ export default async function BoardPage({ searchParams }: PageProps<"/tablero">)
   const range = offset === undefined ? undefined : { from: addDays(thisWeek.start, offset), to: addDays(thisWeek.end, offset) };
 
   const client = await getMainClient();
-  const [editors, pieces] = await Promise.all([
+  const [editors, maxRounds, pieces] = await Promise.all([
     listEditors(),
+    getMaxRounds(),
     listPieces({
       clientId: client.id,
       editorId: editorId || undefined,
@@ -78,7 +79,7 @@ export default async function BoardPage({ searchParams }: PageProps<"/tablero">)
                   <span className="rounded-full bg-white px-2 text-xs font-medium text-zinc-500">{col.length}</span>
                 </h2>
                 <div className="space-y-2.5">
-                  {col.map((p) => <PieceCard key={p.id} piece={p} showStatus={false} statusControl />)}
+                  {col.map((p) => <PieceCard key={p.id} piece={p} showStatus={false} statusControl maxRounds={maxRounds} />)}
                   {col.length === 0 && <p className="px-1 py-4 text-center text-xs text-zinc-400">Sin piezas</p>}
                 </div>
               </section>

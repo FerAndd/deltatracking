@@ -1,12 +1,12 @@
 import { SubmitButton } from "@/components/submit-button";
 import { headers } from "next/headers";
 import { CopyLink } from "@/components/copy-link";
-import { getChecklistTemplate, getMainClient, listEditors } from "@/lib/queries";
-import { addEditor, regenerateClientLink, renameEditor, saveChecklistTemplate, toggleEditor } from "../actions";
+import { getChecklistTemplate, getMainClient, getMaxRounds, listEditors } from "@/lib/queries";
+import { addEditor, regenerateClientLink, renameEditor, saveChecklistTemplate, saveMaxRounds, toggleEditor } from "../actions";
 
 export default async function SettingsPage({ searchParams }: PageProps<"/ajustes">) {
   const sp = await searchParams;
-  const [editors, template, client] = await Promise.all([listEditors(), getChecklistTemplate(), getMainClient()]);
+  const [editors, template, client, maxRounds] = await Promise.all([listEditors(), getChecklistTemplate(), getMainClient(), getMaxRounds()]);
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
   return (
@@ -53,6 +53,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/ajustes
         <form action={addEditor} className="mt-3 flex gap-2">
           <input name="name" required placeholder="Nombre del nuevo editor" className="field py-1.5" />
           <SubmitButton className="btn-primary py-1.5">Agregar</SubmitButton>
+        </form>
+      </section>
+
+      <section className="card p-5">
+        <h2 className="font-semibold">Rondas de cambios incluidas</h2>
+        <p className="text-xs text-zinc-500">
+          Cuántas veces puede pedir cambios el cliente por pieza. Solo tú lo ves: la pieza se marca en amarillo en la última ronda y en rojo si se pasa.
+        </p>
+        <form action={saveMaxRounds} className="mt-4 flex items-center gap-2">
+          <input name="maxRounds" type="number" min={1} max={20} defaultValue={maxRounds} className="field w-24" aria-label="Rondas incluidas" />
+          <span className="text-sm text-zinc-600">rondas por pieza</span>
+          <SubmitButton className="btn-primary ml-auto">Guardar</SubmitButton>
         </form>
       </section>
 

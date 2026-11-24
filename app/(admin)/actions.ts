@@ -242,6 +242,18 @@ export async function saveChecklistTemplate(fd: FormData) {
   redirect("/ajustes?guardado=1");
 }
 
+export async function saveMaxRounds(fd: FormData) {
+  await requireAdmin();
+  const n = Number(str(fd, "maxRounds"));
+  if (!Number.isInteger(n) || n < 1 || n > 20) return;
+  await db
+    .insert(settings)
+    .values({ key: "max_rounds", value: n })
+    .onConflictDoUpdate({ target: settings.key, set: { value: n } });
+  refresh();
+  redirect("/ajustes?guardado=1");
+}
+
 export async function regenerateClientLink() {
   await requireAdmin();
   const client = await getMainClient();

@@ -69,6 +69,13 @@ export function getStatusEvents(pieceId: string) {
     .orderBy(desc(statusEvents.createdAt));
 }
 
+/** Rondas de cambios incluidas por pieza (por default 3). */
+export async function getMaxRounds(): Promise<number> {
+  const [row] = await db.select().from(settings).where(eq(settings.key, "max_rounds"));
+  const n = Number(row?.value);
+  return Number.isInteger(n) && n > 0 ? n : 3;
+}
+
 export async function getChecklistTemplate(): Promise<string[]> {
   const [row] = await db.select().from(settings).where(eq(settings.key, "checklist_template"));
   return Array.isArray(row?.value) ? (row.value as string[]) : [];

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { PieceForm } from "@/components/piece-form";
 import { todayMty } from "@/lib/dates";
-import { getChecklistTemplate, listEditors } from "@/lib/queries";
+import { getChecklistTemplate, getMaxRounds, listEditors } from "@/lib/queries";
 import { createPiece } from "../../actions";
 
 export default async function NewPiecePage() {
-  const [editors, template] = await Promise.all([listEditors(), getChecklistTemplate()]);
+  const [editors, template, maxRounds] = await Promise.all([listEditors(), getChecklistTemplate(), getMaxRounds()]);
   return (
     <div className="mx-auto max-w-5xl">
       <Link href="/tablero" className="text-sm text-zinc-500 hover:text-zinc-900">← Tablero</Link>
@@ -14,6 +14,7 @@ export default async function NewPiecePage() {
         action={createPiece}
         editors={editors}
         submitLabel="Crear pieza"
+        maxRounds={maxRounds}
         values={{ dueDate: todayMty(), checklist: template.map((label) => ({ label, done: false })) }}
       />
     </div>
