@@ -145,6 +145,69 @@ Estructura exacta:
 
 Sé conciso: que se lea en menos de un minuto. ${FORMAT_RULES}`;
 
+// ---------- Versión gratuita (sin IA): plantillas armadas con los datos ----------
+
+type EditorsInput = ReturnType<typeof editorsInput>;
+type ClientInput = ReturnType<typeof clientInput>;
+
+function templateEditors(i: EditorsInput) {
+  const c = i.comentariosDelCliente;
+  const piezas = new Set(c.map((x) => x.pieza)).size;
+  const tags = new Map<string, number>();
+  for (const x of c) if (x.etiqueta) tags.set(x.etiqueta, (tags.get(x.etiqueta) ?? 0) + 1);
+  const topTags = [...tags.entries()].sort((a, b) => b[1] - a[1]);
+  const out = ["# Síntesis semanal para editores", ""];
+  out.push("## Resumen general", `Esta semana el cliente dejó **${c.length} comentario${c.length === 1 ? "" : "s"}** en **${piezas} pieza${piezas === 1 ? "" : "s"}**.`, "");
+  out.push("## Temas que más se repiten");
+  if (topTags.length) topTags.forEach(([t, n]) => out.push(`- **${t}**: ${n} comentario${n === 1 ? "" : "s"}`));
+  else out.push("Sin etiquetas esta semana.");
+  out.push("", "## Feedback por editor");
+  for (const ed of i.editores) {
+    const mine = c.filter((x) => x.editor === ed);
+    out.push(`### ${ed}`);
+    if (!mine.length) out.push("Sin comentarios del cliente esta semana.");
+    mine.forEach((x) => out.push(`- **${x.pieza}** (ronda ${x.ronda}${x.etiqueta ? `, ${x.etiqueta}` : ""}): ${x.comentario}`));
+    out.push("");
+  }
+  out.push("## Piezas con más rondas de cambios");
+  if (i.piezasConMasRondas.length) i.piezasConMasRondas.forEach((p) => out.push(`- **${p.pieza}** · ${p.editor ?? "Sin asignar"} · ${p.rondas} · ${p.estado}`));
+  else out.push("Ninguna pieza con cambios esta semana.");
+  return out.join("\n");
+}
+
+function templateClient(i: ClientInput) {
+  const out = ["# Resumen de la semana", "", `Semana ${i.semana}.`, "", "## Lo que hicimos esta semana"];
+  const done = new Set<string>();
+  i.entregadasEstaSemana.forEach((p) => {
+    done.add(p.pieza);
+    out.push(`- **${p.pieza}** (${p.tipo}) se entregó${p.publicacion !== "por definir" ? `; se publica el ${p.publicacion}` : ""}.`);
+  });
+  i.aprobadasEstaSemana.filter((p) => !done.has(p.pieza)).forEach((p) => {
+    done.add(p.pieza);
+    out.push(`- **${p.pieza}** (${p.tipo}) se aprobó.`);
+  });
+  const lastMove = new Map<string, string>();
+  for (const e of i.avancesDeEstado) if (!lastMove.has(e.pieza)) lastMove.set(e.pieza, e.a); // vienen de la más reciente a la más antigua
+  [...lastMove.entries()].filter(([p]) => !done.has(p)).forEach(([p, a]) => out.push(`- **${p}** avanzó a "${a}".`));
+  if (out[out.length - 1] === "## Lo que hicimos esta semana") out.push("Esta semana seguimos trabajando en tus piezas en proceso.");
+  out.push("", "## Lo que sigue la próxima semana");
+  if (i.esperandoSuAprobacion.length) {
+    out.push("Estas piezas están listas para tu revisión; puedes verlas en tu link:");
+    i.esperandoSuAprobacion.forEach((p) => out.push(`- **${p.pieza}** (${p.tipo}) · publicación: ${p.publicacion}`));
+  }
+  if (i.enProceso.length) {
+    out.push("En proceso:");
+    i.enProceso.forEach((p) => out.push(`- **${p.pieza}** (${p.tipo}) · ${p.estado} · entrega: ${p.entrega} · publicación: ${p.publicacion}`));
+  }
+  if (!i.esperandoSuAprobacion.length && !i.enProceso.length) out.push("No hay piezas pendientes por ahora.");
+  const { entregadas, total } = i.avanceDelMes;
+  out.push("", "## Avance del mes", `**${entregadas} de ${total} piezas entregadas** este mes. Gracias por tu confianza; seguimos avanzando.`);
+  return out.join("\n");
+}
+
+/** true si hay clave de Claude configurada; si no, se usan las plantillas gratuitas. */
+export const aiEnabled = () => Boolean(process.env.ANTHROPIC_API_KEY);
+
 async function askClaude(system: string, data: unknown) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("Falta la variable ANTHROPIC_API_KEY.");
   const client = new Anthropic();
@@ -198,12 +261,14 @@ export async function generateWeeklySummaries(kinds: SummaryKind[] = ["editores"
       let content: string;
       if (kind === "editores") {
         const input = editorsInput(data);
-        content =
-          input.comentariosDelCliente.length === 0 && input.piezasConMasRondas.length === 0
-            ? "# Síntesis semanal para editores\n\nEsta semana no se registraron comentarios del cliente."
-            : await askClaude(EDITORS_SYSTEM, input);
+        if (input.comentariosDelCliente.length === 0 && input.piezasConMasRondas.length === 0) {
+          content = "# Síntesis semanal para editores\n\nEsta semana no se registraron comentarios del cliente.";
+        } else {
+          content = aiEnabled() ? await askClaude(EDITORS_SYSTEM, input) : templateEditors(input);
+        }
       } else {
-        content = await askClaude(CLIENT_SYSTEM, clientInput(data, week));
+        const input = clientInput(data, week);
+        content = aiEnabled() ? await askClaude(CLIENT_SYSTEM, input) : templateClient(input);
       }
       const label = `${formatDate(week.start, { day: "numeric", month: "short" })} – ${formatDate(week.end, { day: "numeric", month: "short" })}`;
       const title = kind === "editores" ? `Síntesis para editores · ${label}` : `Resumen semanal · ${label}`;

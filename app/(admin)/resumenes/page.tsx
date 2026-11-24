@@ -4,7 +4,7 @@ import { GenerateButton } from "@/components/generate-button";
 import { db, summaries } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { getMainClient } from "@/lib/queries";
-import { weekToSummarize } from "@/lib/summaries";
+import { aiEnabled, weekToSummarize } from "@/lib/summaries";
 import { generateNow } from "./actions";
 
 export const maxDuration = 300;
@@ -25,6 +25,11 @@ export default async function SummariesPage() {
           <h1 className="text-2xl font-semibold">Resúmenes semanales</h1>
           <p className="text-sm text-zinc-500">
             Cada viernes a las 5:00 pm se crean dos borradores. Revísalos, edítalos y publícalos.
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            {aiEnabled()
+              ? "Redacción: Claude (IA)."
+              : "Redacción: versión gratuita con plantilla (sin IA). Para que Claude los redacte, agrega ANTHROPIC_API_KEY en Vercel."}
           </p>
         </div>
         <GenerateButton

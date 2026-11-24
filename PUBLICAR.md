@@ -1,8 +1,10 @@
 # Cómo publicar la app (paso a paso)
 
-Necesitas unos 30 minutos. Todo es gratis salvo la clave de Claude (se paga por uso; dos resúmenes por semana cuestan muy poco).
+Necesitas unos 30 minutos.
 
-Vas a crear 3 cosas: la **base de datos** (Supabase), la **clave de Claude** (Anthropic) y el **hosting** (Vercel).
+**Versión gratis:** solo necesitas **Supabase** (Paso 1) y **Vercel** (Paso 3). Salta el Paso 2. Los resúmenes de los viernes se arman solos con una plantilla a partir de tus datos; tú los completas antes de publicarlos.
+
+**Versión con IA (opcional, de pago por uso):** si haces el Paso 2, Claude redacta los resúmenes (patrones, acciones por editor y un tono más cuidado). Puedes agregarla cuando quieras, sin cambiar nada más.
 
 ---
 
@@ -20,7 +22,7 @@ Vas a crear 3 cosas: la **base de datos** (Supabase), la **clave de Claude** (An
 
 > No tienes que crear tablas: la app las crea sola la primera vez que se publica.
 
-## Paso 2 · Clave de Claude
+## Paso 2 · Clave de Claude (OPCIONAL — sáltalo para la versión gratis)
 
 1. Entra a **console.anthropic.com** y crea tu cuenta.
 2. **Settings → Billing**: agrega una tarjeta y carga saldo (con 5 USD alcanza para muchos meses de resúmenes).
@@ -31,14 +33,14 @@ Vas a crear 3 cosas: la **base de datos** (Supabase), la **clave de Claude** (An
 1. Entra a **vercel.com** → **Sign Up** → **Continue with GitHub** (plan **Hobby**, gratis).
 2. **Add New… → Project** → busca el repositorio **deltatracking** → **Import**.
    - Si no aparece: **Adjust GitHub App Permissions** y dale acceso a `deltatracking`.
-3. Antes de presionar Deploy, abre **Environment Variables** y agrega estas 5 (nombre y valor):
+3. Antes de presionar Deploy, abre **Environment Variables** y agrega estas variables (nombre y valor). En la versión gratis **no agregues** `ANTHROPIC_API_KEY`:
 
 | Nombre | Valor |
 |---|---|
 | `DATABASE_URL` | El texto del Paso 1 |
 | `ADMIN_PASSWORD` | La contraseña con la que **tú** vas a entrar a la app |
 | `SESSION_SECRET` | Un texto largo inventado, de 40 letras o más (ej. escribe una frase larga sin espacios) |
-| `ANTHROPIC_API_KEY` | La clave del Paso 2 |
+| `ANTHROPIC_API_KEY` | (Opcional) La clave del Paso 2 |
 | `CRON_SECRET` | Otro texto largo inventado, distinto al anterior |
 
 4. Presiona **Deploy** y espera 2–3 minutos.
@@ -50,7 +52,7 @@ Vas a crear 3 cosas: la **base de datos** (Supabase), la **clave de Claude** (An
 
 1. Abre tu dirección y entra con tu `ADMIN_PASSWORD`.
 2. Crea una pieza de prueba.
-3. Ve a **Resúmenes → Generar ahora** para comprobar que la clave de Claude funciona.
+3. Ve a **Resúmenes → Generar ahora** para ver cómo quedan los borradores.
 
 ## Paso 5 · Compartir el link con Delta
 
@@ -71,4 +73,9 @@ Vas a crear 3 cosas: la **base de datos** (Supabase), la **clave de Claude** (An
 ## Si algo falla
 
 - **Vercel → tu proyecto → Deployments**: si sale en rojo, abre el detalle y copia el error para pasármelo.
-- **"No se pudo generar: Falta la variable…"**: revisa en **Settings → Environment Variables** que estén las 5 variables y vuelve a publicar (**Deployments → ⋯ → Redeploy**).
+- Si cambias o agregas una variable en **Settings → Environment Variables**, vuelve a publicar para que tome efecto (**Deployments → ⋯ → Redeploy**).
+
+## Límites del plan gratis
+
+- **Supabase gratis** pausa el proyecto si pasa una semana sin ningún uso. Con el cliente entrando y los resúmenes de cada viernes es raro que pase; si pasa, entras a supabase.com y presionas **Restore**.
+- **Vercel Hobby** (gratis) es, según sus condiciones, para uso personal y no comercial. Para un prototipo está bien; si la app se vuelve parte formal de tu servicio a clientes, lo correcto es pasar a **Vercel Pro** (20 USD al mes).
